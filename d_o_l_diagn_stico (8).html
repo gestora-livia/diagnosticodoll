@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D.O.L. | Diagnóstico Operacional de Lançamentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #947653;
+            --dark-gold: #5b3b03;
+            --light-cream: #ffe1a1;
+            --cream-bg: #fcfaf7;
+            --white: #ffffff;
+            --bg-dark: #0a0a0a;
+            --bg-panel: #161616;
+            --border-color: rgba(148, 118, 83, 0.2);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: #d1d5db; /* gray-300 */
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2, h3, .font-serif, .font-serif-italic {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Botão Principal */
+        .btn-cta {
+            background-color: var(--dark-gold);
+            color: var(--white);
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            box-shadow: 0 10px 25px -5px rgba(91, 59, 3, 0.3);
+            border: 1px solid var(--dark-gold);
+            text-transform: uppercase;
+        }
+        
+        .btn-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 35px -5px rgba(91, 59, 3, 0.4);
+            background-color: var(--gold);
+            border-color: var(--gold);
+        }
+
+        /* Inputs de Formulário */
+        .form-input {
+            width: 100%;
+            background-color: #1a1a1a;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 1px rgba(148, 118, 83, 0.5);
+        }
+        .form-label {
+            display: block;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Checkbox & Radio Personalizados */
+        .form-radio-checkbox {
+            accent-color: var(--gold);
+            width: 1.25rem;
+            height: 1.25rem;
+            background-color: #1a1a1a;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        /* Ocultar barra de rolagem (Slider e Modal) */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Quiz Options */
+        .quiz-option {
+            background-color: #1a1a1a;
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        .quiz-option:hover {
+            border-color: var(--gold);
+            background-color: rgba(148, 118, 83, 0.05);
+            transform: translateY(-1px);
+        }
+        
+        .quiz-option.selected {
+            border-color: var(--gold);
+            background-color: rgba(148, 118, 83, 0.15);
+            box-shadow: 0 0 15px rgba(148, 118, 83, 0.2);
+        }
+        .option-letter {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #2a2a2a;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+        .quiz-option:hover .option-letter, .quiz-option.selected .option-letter {
+            background-color: var(--gold);
+            color: var(--bg-dark);
+            border-color: var(--gold);
+        }
+
+        /* Utility animations */
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        .fade-out { animation: fadeOut 0.3s ease forwards; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+        
+        /* Bg Glow - Fixed para evitar rolagem invisível */
+        .glow-bg {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(148,118,83,0.1) 0%, rgba(10,10,10,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Estilos de Impressão (PDF) */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+            }
+            .glow-bg, header, footer, .no-print, #step-1, #step-2, #pitch-section {
+                display: none !important;
+            }
+            #step-3 {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .bg-\[\\#161616\], .bg-\[\\#111111\], .bg-\[\\#0a0a0a\], .bg-white\\/5 {
+                background: #ffffff !important;
+                box-shadow: none !important;
+            }
+            .border, .border-white\\/5, .border-white\\/10, .border-\\[var\\(--border-color\\)\\] {
+                border-color: #e5e7eb !important;
+            }
+            .text-white, .text-gray-300, .text-gray-400, .text-light-cream, .text-gold {
+                color: #111827 !important;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased min-h-[100dvh] flex flex-col relative selection:bg-gold selection:text-white">
+
+    <!-- Background Glow Elements -->
+    <div class="glow-bg top-[-200px] left-[-200px]"></div>
+    <div class="glow-bg bottom-[-200px] right-[-200px]"></div>
+
+    <!-- CONTAINER PRINCIPAL -->
+    <main class="flex-grow flex items-center justify-center relative z-10 py-4 px-4 sm:px-6">
+        
+        <!-- ============================================== -->
+        <!-- ETAPA 1: INTRODUÇÃO (Apenas Copy e Botão)      -->
+        <!-- ============================================== -->
+        <section id="step-1" class="w-full max-w-4xl mx-auto flex flex-col items-center text-center gap-4 sm:gap-8 fade-in">
+            
+            <div class="flex flex-col items-center w-full">
+                <!-- Top Badge -->
+                <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-white/5 border border-white/10 text-gold text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-3 sm:mb-6">
+                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gold animate-pulse"></span>
+                    Diagnóstico Gratuito
+                </div>
+                
+                <!-- Subheadline -->
+                <h4 class="text-[10px] sm:text-sm text-gray-400 uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-2 sm:mb-4 font-semibold">
+                    Diagnóstico Operacional de Lançamentos
+                </h4>
+                
+                <!-- Headline -->
+                <h1 class="text-2xl sm:text-4xl lg:text-5xl text-white font-serif leading-[1.2] mb-3 sm:mb-6 max-w-3xl">
+                    Descubra o que está travando seu próximo lançamento — <span class="italic text-light-cream">antes que ele aconteça.</span>
+                </h1>
+                
+                <!-- Text -->
+                <p class="text-sm sm:text-lg text-gray-400 font-light leading-relaxed mb-4 sm:mb-8 max-w-2xl">
+                    Em 3 minutos, mapeie os gargalos exatos da sua operação e descubra o caminho direto para bater metas sem desgastar a sua equipe.
+                </p>
+
+                <!-- Checkpoints formato Pílula -->
+                <div class="flex flex-row flex-wrap gap-2 sm:gap-4 mb-4 sm:mb-8 justify-center">
+                    <div class="bg-[#fcfaf7] border border-[#947653]/40 text-[#5b3b03] px-3 py-1.5 sm:px-5 sm:py-3 rounded-full font-bold text-[10px] sm:text-sm flex items-center gap-1.5 sm:gap-3 shadow-sm">
+                        <svg class="w-3.5 h-3.5 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                        Bater a meta.
+                    </div>
+                    <div class="bg-[#fcfaf7] border border-[#947653]/40 text-[#5b3b03] px-3 py-1.5 sm:px-5 sm:py-3 rounded-full font-bold text-[10px] sm:text-sm flex items-center gap-1.5 sm:gap-3 shadow-sm">
+                        <svg class="w-3.5 h-3.5 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="#947653" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Menos caos.
+                    </div>
+                    <div class="bg-[#fcfaf7] border border-[#947653]/40 text-[#5b3b03] px-3 py-1.5 sm:px-5 sm:py-3 rounded-full font-bold text-[10px] sm:text-sm flex items-center gap-1.5 sm:gap-3 shadow-sm hidden sm:flex">
+                        <svg class="w-3.5 h-3.5 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        Menos desgaste.
+                    </div>
+                </div>
+
+                <!-- Botão de Ação (Abre o Modal) -->
+                <div class="w-full max-w-md mx-auto mt-0">
+                    <button type="button" onclick="openLeadModal()" class="w-full btn-cta shadow-2xl group py-3.5 sm:py-4 text-sm sm:text-lg">
+                        Iniciar Diagnóstico 
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ml-2 group-hover:translate-x-1 transition-transform"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                    <p class="text-[10px] sm:text-[12px] text-gray-500 text-center mt-3 flex items-center justify-center gap-1.5">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        Seus dados seguros.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================== -->
+        <!-- ETAPA 2: QUIZ INTERATIVO                       -->
+        <!-- ============================================== -->
+        <section id="step-2" class="w-full max-w-3xl mx-auto hidden py-4">
+            
+            <div class="mb-8 flex justify-between items-center text-sm font-semibold text-gray-400 uppercase tracking-widest border-b border-white/10 pb-4">
+                <span>Diagnóstico</span>
+                <span id="quiz-progress" class="text-gold">Pergunta 1 de 5</span>
+            </div>
+
+            <div class="bg-[var(--bg-panel)] border border-[var(--border-color)] p-6 sm:p-10 rounded-2xl shadow-2xl relative">
+                
+                <h2 id="question-text" class="text-lg sm:text-2xl text-white font-serif leading-relaxed mb-8">
+                    <!-- Pergunta injetada via JS -->
+                </h2>
+
+                <div id="options-container" class="space-y-3 sm:space-y-4">
+                    <!-- Opções injetadas via JS -->
+                </div>
+
+                <div class="mt-8 flex justify-between items-center">
+                    <button type="button" id="btn-prev" onclick="prevQuestion()" class="text-gray-400 hover:text-white text-xs sm:text-sm font-semibold uppercase tracking-widest transition-colors hidden">
+                        ← Voltar
+                    </button>
+                    <button type="button" id="btn-next" onclick="nextQuestion()" class="btn-cta py-3 px-6 sm:px-8 text-xs sm:text-sm opacity-50 cursor-not-allowed ml-auto" disabled>
+                        Próxima
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================== -->
+        <!-- ETAPA 3: RESULTADO E CONSULTORIA EXPRESSA      -->
+        <!-- ============================================== -->
+        <section id="step-3" class="w-full max-w-4xl mx-auto hidden py-8">
+            
+            <div class="text-center mb-12">
+                <span id="result-badge" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-6 text-center leading-snug">
+                    <!-- Badge injetada via JS -->
+                </span>
+                
+                <h1 class="text-3xl sm:text-5xl text-white font-serif leading-[1.2] mb-6">
+                    Seu Diagnóstico, <span id="result-name" class="italic text-light-cream block sm:inline"></span>
+                </h1>
+            </div>
+
+            <!-- Box do Diagnóstico e Plano de Ação -->
+            <div class="bg-[var(--bg-panel)] border border-[var(--border-color)] rounded-2xl shadow-2xl overflow-hidden mb-12">
+                
+                <!-- Diagnóstico Base -->
+                <div class="p-6 sm:p-10 border-b border-white/5">
+                    <h3 class="text-lg sm:text-xl text-white font-serif mb-4 flex items-center gap-3">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        Realidade da Operação
+                    </h3>
+                    <p id="result-description" class="text-gray-300 leading-relaxed font-light text-base sm:text-lg">
+                        <!-- Descrição injetada via JS -->
+                    </p>
+                </div>
+
+                <!-- Plano de Ação -->
+                <div class="p-6 sm:p-10 bg-[#111111]">
+                    <h3 class="text-lg sm:text-xl text-gold font-serif mb-6 flex items-center gap-3">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Seu Plano de Ação (24h)
+                    </h3>
+                    
+                    <ul id="action-plan-list" class="space-y-4 sm:space-y-6">
+                        <!-- Plano de Ação injetado via JS -->
+                    </ul>
+                </div>
+                
+                <!-- Resumo das Respostas (Para o PDF) -->
+                <div id="answers-summary" class="p-6 sm:p-10 border-t border-white/5 bg-[#0a0a0a]">
+                    <h3 class="text-lg sm:text-xl text-white font-serif mb-6 flex items-center gap-3">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Resumo das Respostas
+                    </h3>
+                    <div id="answers-list" class="space-y-4 sm:space-y-5">
+                        <!-- Respostas injetadas via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- A Ponte de Vendas (Pitch para o S.O.L) -->
+            <div id="pitch-section" class="text-center max-w-3xl mx-auto bg-white/5 border border-white/10 p-6 sm:p-12 rounded-2xl backdrop-blur-sm">
+                <span class="text-gold font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-4 block">A dura realidade...</span>
+                
+                <p class="text-base sm:text-lg text-gray-300 mb-6 font-light leading-relaxed">
+                    Esses 3 passos são ações reais que você pode aplicar amanhã com a equipe e já ver resultado.
+                </p>
+                <p class="text-base sm:text-lg text-gray-300 mb-8 font-light leading-relaxed">
+                    Mas gerenciar aprovações de forma manual vai <strong class="text-white font-medium">custar dezenas de horas do seu time.</strong>
+                </p>
+                <p class="text-lg sm:text-xl text-white font-serif mb-10">
+                    É aqui que o <span class="text-gold italic">Método S.O.L. Automatizado</span> entra.
+                </p>
+
+                <!-- Slider S.O.L. Placeholder (Vídeos) -->
+                <div class="my-10 sm:my-12 relative w-full overflow-hidden">
+                    <div class="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 pb-4">
+                        <div class="snap-center flex-shrink-0 w-full sm:w-[80%] aspect-video bg-[#1c1c1c] border border-gold/30 rounded-2xl flex items-center justify-center relative group">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors z-10"></div>
+                            <span class="text-gray-400 font-semibold tracking-widest uppercase text-xs sm:text-sm relative z-20">Vídeo 1 (Dashboard)</span>
+                        </div>
+                        <div class="snap-center flex-shrink-0 w-full sm:w-[80%] aspect-video bg-[#1c1c1c] border border-gold/30 rounded-2xl flex items-center justify-center relative group">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors z-10"></div>
+                            <span class="text-gray-400 font-semibold tracking-widest uppercase text-xs sm:text-sm relative z-20">Vídeo 2 (Tarefas)</span>
+                        </div>
+                        <div class="snap-center flex-shrink-0 w-full sm:w-[80%] aspect-video bg-[#1c1c1c] border border-gold/30 rounded-2xl flex items-center justify-center relative group">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors z-10"></div>
+                            <span class="text-gray-400 font-semibold tracking-widest uppercase text-xs sm:text-sm relative z-20">Vídeo 3 (Cronograma)</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-center gap-3 mt-4">
+                        <div class="w-2 h-2 rounded-full bg-gold"></div>
+                        <div class="w-2 h-2 rounded-full bg-white/20"></div>
+                        <div class="w-2 h-2 rounded-full bg-white/20"></div>
+                    </div>
+                </div>
+
+                <ul class="space-y-4 sm:space-y-5 mb-10 text-left max-w-2xl mx-auto bg-[#0a0a0a]/50 p-5 sm:p-6 rounded-xl border border-white/5">
+                    <li class="flex items-start gap-3 sm:gap-4">
+                        <div class="mt-1 flex-shrink-0 text-gold bg-gold/10 p-1 sm:p-1.5 rounded-full"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        <span class="text-gray-300 text-sm sm:text-lg font-light leading-relaxed">Plugamos uma <strong class="text-white font-medium">automação profunda (Make/IA)</strong> no ClickUp.</span>
+                    </li>
+                    <li class="flex items-start gap-3 sm:gap-4">
+                        <div class="mt-1 flex-shrink-0 text-gold bg-gold/10 p-1 sm:p-1.5 rounded-full"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        <span class="text-gray-300 text-sm sm:text-lg font-light leading-relaxed">A distribuição e cronograma acontecem <strong class="text-white font-medium">100% no automático</strong>.</span>
+                    </li>
+                    <li class="flex items-start gap-3 sm:gap-4">
+                        <div class="mt-1 flex-shrink-0 text-gold bg-gold/10 p-1 sm:p-1.5 rounded-full"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        <span class="text-gray-300 text-sm sm:text-lg font-light leading-relaxed"><strong class="text-white font-medium">Eliminamos o trabalho braçal</strong>, garantindo foco no lucro.</span>
+                    </li>
+                </ul>
+
+                <p class="text-sm sm:text-base text-gray-400 mb-8 sm:mb-10 leading-relaxed text-center">
+                    <span class="text-light-cream font-medium text-base sm:text-lg">Sua operação merece um motor vivo, não um cemitério de tarefas.</span>
+                </p>
+                
+                <div class="flex flex-col items-center gap-4 sm:gap-6 no-print">
+                    <button type="button" onclick="openScheduleModal()" class="btn-cta w-full sm:w-auto shadow-2xl hover:scale-105 transition-transform duration-300 flex-col py-3.5 sm:py-4 px-6 sm:px-8">
+                        <span class="text-sm sm:text-base">Automatizar e escalar →</span>
+                        <span class="text-[8px] sm:text-[9px] text-cream/70 font-bold tracking-widest mt-1.5 sm:mt-2 uppercase">Conheça a estrutura - Sem compromisso</span>
+                    </button>
+                    
+                    <button onclick="window.print()" class="mt-2 text-gray-400 hover:text-white font-medium text-xs sm:text-sm flex items-center justify-center w-full sm:w-auto gap-2 transition-colors border border-gray-600/50 hover:border-white/30 px-5 py-2.5 rounded-full bg-white/5">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Baixar em PDF
+                    </button>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Rodapé Simples -->
+    <footer class="w-full py-4 text-center text-gray-600 text-[10px] border-t border-white/5 relative z-10 mt-auto">
+        <p>© 2024 Lívia Lima. Todos os direitos reservados. D.O.L.</p>
+    </footer>
+
+    <!-- ============================================== -->
+    <!-- MODAL DE CAPTURA DE LEAD (FORMULÁRIO INICIAL)  -->
+    <!-- ============================================== -->
+    <div id="lead-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <!-- MODIFICADO: overflow-hidden e flex-col para travar o botão de fechar -->
+        <div class="bg-[#111111] border border-[var(--border-color)] rounded-2xl w-full max-w-xl shadow-2xl relative transform scale-95 transition-transform duration-300 max-h-[90dvh] flex flex-col overflow-hidden" id="lead-modal-content">
+            
+            <!-- Botão Fechar Fixo e Seguro (Sempre visível) -->
+            <div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-50">
+                <button type="button" onclick="closeLeadModal()" class="text-gray-400 hover:text-white bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-white/10 p-2 rounded-full transition-colors shadow-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+
+            <!-- Decorative element -->
+            <div class="absolute -top-px left-10 right-10 h-px bg-gradient-to-r from-transparent via-gold to-transparent opacity-50 z-0"></div>
+            
+            <!-- Área do Formulário isolada (Apenas ela rola) -->
+            <div class="p-6 sm:p-10 pt-12 sm:pt-14 overflow-y-auto hide-scrollbar flex-1 relative z-10">
+                <div class="text-center mb-6 sm:mb-8">
+                    <h3 class="text-xl sm:text-2xl text-white font-serif mb-2">Para onde enviamos o resultado?</h3>
+                    <p class="text-xs sm:text-sm text-gray-400">Preencha rapidamente para iniciar.</p>
+                </div>
+
+                <form id="lead-form" onsubmit="startDiagnostic(event)" class="space-y-4 sm:space-y-5">
+                    <div>
+                        <label class="form-label">Nome Completo *</label>
+                        <input type="text" id="lead-name" required class="form-input text-sm" placeholder="Seu nome completo">
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">E-mail Principal *</label>
+                        <input type="email" id="lead-email" required class="form-input text-sm" placeholder="seu@email.com">
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">WhatsApp *</label>
+                        <input type="tel" id="lead-whatsapp" required class="form-input text-sm" placeholder="+55 (00) 00000-0000" pattern="[\d\s\(\)\-]+" title="Apenas números, espaços, parênteses e traços.">
+                    </div>
+
+                    <!-- CAMPO INSTAGRAM -->
+                    <div>
+                        <label class="form-label">Instagram <span class="text-gray-500 font-normal normal-case tracking-normal ml-1">(Opcional)</span></label>
+                        <input type="text" id="lead-instagram" class="form-input text-sm" placeholder="@seu.perfil">
+                    </div>
+
+                    <div>
+                        <label class="form-label mb-2 sm:mb-3">Sua função hoje? *</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="funcao" value="Coprodutor(a)" required class="form-radio-checkbox rounded-full flex-shrink-0"><span class="text-gray-300 text-xs sm:text-sm">Coprodutor(a)</span></label>
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="funcao" value="Infoprodutor(a)" required class="form-radio-checkbox rounded-full flex-shrink-0"><span class="text-gray-300 text-xs sm:text-sm">Infoprodutor(a)</span></label>
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="funcao" value="Estrategista de lançamentos" required class="form-radio-checkbox rounded-full flex-shrink-0"><span class="text-gray-300 text-xs sm:text-sm">Estrategista de lançamentos</span></label>
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="funcao" value="Dono(a) de Agência" required class="form-radio-checkbox rounded-full flex-shrink-0"><span class="text-gray-300 text-xs sm:text-sm">Dono(a) de Agência (Marketing/Publicidade)</span></label>
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="funcao" value="Gestor(a) de Projetos" required class="form-radio-checkbox rounded-full flex-shrink-0"><span class="text-gray-300 text-xs sm:text-sm">Gestor(a) de Projetos</span></label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Faturamento médio mensal? *</label>
+                        <select name="faturamento" required class="form-input appearance-none text-xs sm:text-sm cursor-pointer">
+                            <option value="" disabled selected>Selecione uma opção</option>
+                            <option value="Ainda não faturei">Ainda não faturei</option>
+                            <option value="Até R$ 10 mil">Até R$ 10 mil</option>
+                            <option value="R$ 10 mil a R$ 50 mil">R$ 10 mil a R$ 50 mil</option>
+                            <option value="R$ 50 mil a R$ 100 mil">R$ 50 mil a R$ 100 mil</option>
+                            <option value="R$ 100 mil a R$ 500 mil">R$ 100 mil a R$ 500 mil</option>
+                            <option value="Acima de R$ 500 mil">Acima de R$ 500 mil</option>
+                            <option value="Acima de R$1M">Acima de R$1M</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-2 sm:pt-4">
+                        <button type="submit" class="w-full btn-cta shadow-xl group text-sm sm:text-base py-3 sm:py-4">
+                            Iniciar Diagnóstico Agora
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ml-2 group-hover:translate-x-1 transition-transform"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- MODAL DE AGENDAMENTO (ETAPA 3)                 -->
+    <!-- ============================================== -->
+    <div id="schedule-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <!-- MODIFICADO: overflow-hidden e flex-col para travar o botão de fechar -->
+        <div class="bg-[#111111] border border-white/10 rounded-2xl w-full max-w-xl shadow-2xl relative transform scale-95 transition-transform duration-300 max-h-[90dvh] flex flex-col overflow-hidden" id="schedule-modal-content">
+            
+            <!-- Botão Fechar Fixo e Seguro -->
+            <div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-50">
+                <button type="button" onclick="closeScheduleModal()" class="text-gray-400 hover:text-white bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-white/10 p-2 rounded-full transition-colors shadow-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+
+            <!-- Área Rolável Isolada -->
+            <div class="p-6 sm:p-10 pt-12 sm:pt-14 overflow-y-auto hide-scrollbar flex-1 text-center">
+                <span class="text-gold font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-3 block">Aplicação para Diagnóstico</span>
+                <h2 class="text-xl sm:text-3xl text-white font-serif mb-6 sm:mb-8">Escolha o horário para a sua Call</h2>
+                
+                <a href="https://calendar.app.google/Far8yoJe6RPKw6zL9" target="_blank" class="inline-flex items-center justify-center gap-2 sm:gap-3 bg-transparent border border-white/40 text-white hover:bg-white/10 transition-colors py-3 sm:py-4 px-4 sm:px-6 rounded-xl text-sm sm:text-base font-medium w-full mb-6 sm:mb-8">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    Abrir Calendário para Agendar
+                </a>
+                
+                <label class="flex items-center gap-3 cursor-pointer text-left bg-[#1a1a1a] p-4 sm:p-5 rounded-xl border border-white/5 hover:border-gold/30 transition-colors mb-6 sm:mb-8">
+                    <input type="checkbox" id="agendou_call_modal" class="form-radio-checkbox rounded flex-shrink-0">
+                    <span class="text-white text-xs sm:text-sm font-medium flex-1">Já escolhi meu horário e agendei <span class="bg-green-500 text-white text-[9px] px-1.5 py-0.5 rounded ml-1">✓</span> <span class="text-gray-400 font-normal ml-1 block sm:inline mt-1 sm:mt-0">(Opcional)</span></span>
+                </label>
+
+                <button onclick="confirmSchedule(this)" class="btn-cta w-full py-3 sm:py-4 text-xs sm:text-sm tracking-widest relative uppercase transition-all">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- LOGIC (JAVASCRIPT)                             -->
+    <!-- ============================================== -->
+    <script>
+        /* --- INTEGRAÇÃO GOOGLE SHEETS --- */
+        // PASSO 1: Cole a URL do seu WebApp do Google Apps Script aqui dentro das aspas:
+        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyphfhWf5YrWbk420O8VnHiiF5w1DrFyhfl0fKS4sfkacxChmAnROuCeTrx4BFKGho/exec";
+
+        /* --- DADOS DO USUÁRIO --- */
+        let leadData = {
+            name: '',
+            email: '',
+            whatsapp: '',
+            instagram: '', // Novo campo adicionado
+            funcao: '',
+            faturamento: '',
+            score: 0,
+            tier: '',
+            agendou: false,
+            pergunta1: '',
+            pergunta2: '',
+            pergunta3: '',
+            pergunta4: '',
+            pergunta5: ''
+        };
+
+        function enviarParaPlanilha(acao) {
+            if (!WEBHOOK_URL) {
+                console.log("Webhook não configurado. Simulação de envio:", { acao, ...leadData });
+                return Promise.resolve(); 
+            }
+
+            const payload = { action: acao, ...leadData };
+
+            return fetch(WEBHOOK_URL, {
+                method: 'POST',
+                mode: 'no-cors', // <-- ADICIONADO: Ignora os bloqueios de segurança do navegador
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                console.log("Dados processados com sucesso: ", acao);
+            }).catch(err => console.error("Erro ao enviar dados para a planilha:", err));
+        }
+
+        /* --- ESTADO DO QUIZ --- */
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+
+        /* --- PERGUNTAS DO D.O.L. --- */
+        const questions = [
+            {
+                text: "1. Quando a estratégia de um lançamento (Clássico ou Meteórico) é fechada, como as tarefas chegam até a equipe?",
+                options: [
+                    { point: 1, text: "De forma descentralizada: reuniões, áudios no WhatsApp ou mensagens diretas. A equipe executa conforme a demanda surge." },
+                    { point: 2, text: "Ferramentas de gestão (ClickUp/Trello), mas exige trabalho manual: o gestor precisa criar card por card, definir prazos e atribuir responsáveis." },
+                    { point: 3, text: "Fluxo misto: algumas áreas (como design e tráfego) usam o sistema, mas as definições estratégicas e de copy acabam se perdendo no WhatsApp." },
+                    { point: 4, text: "Distribuição automática: com o briefing aprovado, o sistema cria e distribui 100% das tarefas, dependências e datas na ferramenta sem intervenção humana." }
+                ]
+            },
+            {
+                text: "2. Faltam 10 dias para o CPL 1. Um Copywriter atrasa a entrega em 2 dias. Como a operação reage?",
+                options: [
+                    { point: 1, text: "Reação em cadeia: é necessário avisar a equipe nos grupos, cobrar os responsáveis e acelerar a produção para compensar o tempo perdido." },
+                    { point: 2, text: "Ajuste manual: o gestor de projetos precisa abrir a ferramenta de gestão e alterar as datas de todas as tarefas subsequentes, card por card." },
+                    { point: 3, text: "Falha de comunicação: a data da copy é ajustada, mas a informação nem sempre chega a tempo para o design ou tráfego, gerando gargalos." },
+                    { point: 4, text: "Recálculo inteligente: o sistema identifica o atraso e recalcula automaticamente as datas de toda a linha do tempo, notificando a equipe." }
+                ]
+            },
+            {
+                text: "3. Como funciona o fluxo de aprovação de Páginas, Copys e Criativos com o Especialista?",
+                options: [
+                    { point: 1, text: "Links soltos e aprovações informais via WhatsApp. É comum o lançamento atrasar por falta de validação." },
+                    { point: 2, text: "Os arquivos ficam no Drive ou ClickUp, mas o gestor precisa enviar mensagens ativamente cobrando a aprovação de cada item." },
+                    { point: 3, text: "Aprovações descentralizadas: algumas peças são validadas em reuniões, outras no Drive, outras no WhatsApp." },
+                    { point: 4, text: "Painel centralizado: há uma visão única de 'Aguardando Aprovação'. Ao clicar em aprovar, o sistema move a tarefa para o próximo responsável." }
+                ]
+            },
+            {
+                text: "4. Durante a pressão da captação ou carrinho aberto, como você identifica bloqueios críticos?",
+                options: [
+                    { point: 1, text: "De forma reativa: o erro é percebido quando afeta o resultado final (ex: o anúncio não subiu, a automação falhou, o e-mail não saiu)." },
+                    { point: 2, text: "Microgerenciamento: o gestor investe parte significativa do dia navegando na ferramenta de gestão para checar o status de cada frente." },
+                    { point: 3, text: "Dependência do modelo: em operações de perpétuo o controle é bom, mas na urgência de um lançamento, volta a ser manual e desgastante." },
+                    { point: 4, text: "Gestão por exceção: o sistema monitora os prazos e envia alertas automáticos apenas sobre tarefas críticas que saíram do trilho." }
+                ]
+            },
+            {
+                text: "5. Após o fechamento do carrinho, como a agência processa os erros operacionais para o próximo?",
+                options: [
+                    { point: 1, text: "Foco no curto prazo: resolvem-se os problemas de suporte e a equipe já engata no próximo projeto, sem registro formal." },
+                    { point: 2, text: "Registro passivo: os erros são anotados num documento de debriefing, mas a aplicação prática depende da memória da equipe." },
+                    { point: 3, text: "Otimização parcial: métricas são melhoradas, mas os mesmos gargalos operacionais (atrasos, refações) tendem a se repetir." },
+                    { point: 4, text: "Evolução sistêmica: um erro operacional gera imediatamente uma nova regra ou automação no processo padrão." }
+                ]
+            }
+        ];
+
+        /* --- RESULTADOS / DIAGNÓSTICOS --- */
+        const resultTiers = [
+            {
+                min: 5, max: 10,
+                badgeClass: "border-red-500/30 text-red-400 bg-red-500/10",
+                badgeText: "🔴 Operação em Risco (Atrito Máximo)",
+                description: "A sua operação hoje é altamente dependente de esforço bruto e da sua memória. O WhatsApp dita o ritmo de trabalho e a falta de centralização cria um ambiente reativo. O risco de ruptura é alto: se o volume de investimento escalar amanhã, a sua operação quebra antes de entregar o resultado.",
+                plan: [
+                    { title: "Regra do 'Zero WhatsApp'", text: "Escolha uma ferramenta (ClickUp, Trello) e institua a regra de que nenhuma demanda existe se não estiver documentada com prazo e responsável." },
+                    { title: "Fila Única do Especialista", text: "Pare de enviar links avulsos para aprovação. Crie um status único chamado 'Aguardando Especialista'. Ele só deve olhar para essa fila." },
+                    { title: "Congelamento de Escopo", text: "Defina que, a partir de 7 dias antes da captação, nenhuma alteração de estratégia ou copy pode ser feita sem o aval documentado do gestor." }
+                ]
+            },
+            {
+                min: 11, max: 16,
+                badgeClass: "border-yellow-500/30 text-yellow-400 bg-yellow-500/10",
+                badgeText: "🟡 Gestão Analógica (Sobrecarga)",
+                description: "Vocês já possuem ferramentas e processos desenhados, mas criaram um sistema engessado. Hoje, a sua equipe trabalha para alimentar o software, e não o contrário. A dependência de um gestor para mover cards, cobrar pessoas e recalcular prazos cria um gargalo natural que devora a sua margem de lucro.",
+                plan: [
+                    { title: "Mapeie o Caminho Crítico", text: "Documente as dependências diretas. Se o copywriter atrasar, o gestor precisa saber exatamente quem será impactado na linha do tempo." },
+                    { title: "Auditoria de 48h (QA Antecipada)", text: "Crie um checklist obrigatório que deve ser executado 48h antes de cada fase crítica. Teste a jornada completa do lead, de links a automações." },
+                    { title: "Regra da Subpasta 'FINAL'", text: "Estabeleça uma regra fixa no Drive: apenas arquivos 100% aprovados pelo especialista entram na subpasta 'FINAL', eliminando buscas por versões." }
+                ]
+            },
+            {
+                min: 17, max: 20,
+                badgeClass: "border-green-500/30 text-green-400 bg-green-500/10",
+                badgeText: "🟢 Operação Fragmentada",
+                description: "Parabéns. A sua base operacional é muito acima da média e os erros amadores já foram eliminados. O seu problema atual é que a operação está dividida em silos. O Tráfego funciona bem de um lado, o Design de outro, mas a transição de bastão entre essas equipes tem falhas em momentos de alta pressão.",
+                plan: [
+                    { title: "SLA Inter-Áreas", text: "A equipe de copy precisa saber em qual formato exato e em qual pasta o tráfego precisa receber o texto para que não haja nenhuma refação." },
+                    { title: "Filtre por 'Red Flags'", text: "Como diretor, você não deve mais olhar micro-tarefas. Garanta um painel unificado que puxe apenas tarefas bloqueadas (red flags)." },
+                    { title: "Debriefing como Lei", text: "Pegue o documento do último lançamento, identifique os 2 maiores erros processuais e transforme-os em etapas obrigatórias do próximo." }
+                ]
+            }
+        ];
+
+
+        /* --- LÓGICA DO MODAL DE LEAD --- */
+        function openLeadModal() {
+            const modal = document.getElementById('lead-modal');
+            const content = document.getElementById('lead-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeLeadModal() {
+            const modal = document.getElementById('lead-modal');
+            const content = document.getElementById('lead-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto'; 
+            }, 300);
+        }
+
+        /* --- FUNÇÕES DO QUIZ E ENVIO --- */
+
+        function startDiagnostic(e) {
+            e.preventDefault();
+            
+            leadData.name = document.getElementById('lead-name').value.trim();
+            leadData.email = document.getElementById('lead-email').value.trim();
+            leadData.whatsapp = document.getElementById('lead-whatsapp').value.trim();
+            leadData.instagram = document.getElementById('lead-instagram').value.trim();
+            
+            const funcaoSelecionada = document.querySelector('input[name="funcao"]:checked');
+            leadData.funcao = funcaoSelecionada ? funcaoSelecionada.value : '';
+            leadData.faturamento = document.querySelector('select[name="faturamento"]').value;
+            
+            enviarParaPlanilha("LEAD_CAPTURADO");
+
+            closeLeadModal();
+
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            
+            document.body.classList.remove('overflow-hidden');
+            document.querySelector('main').classList.remove('max-h-[100dvh]', 'overflow-y-auto');
+
+            step1.classList.remove('fade-in');
+            step1.classList.add('fade-out');
+            
+            setTimeout(() => {
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                step2.classList.add('fade-in');
+                renderQuestion();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 300);
+        }
+
+        function renderQuestion() {
+            const questionData = questions[currentQuestionIndex];
+            document.getElementById('quiz-progress').innerText = `Pergunta ${currentQuestionIndex + 1} de ${questions.length}`;
+            document.getElementById('question-text').innerText = questionData.text;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            const letters = ['A', 'B', 'C', 'D'];
+            
+            questionData.options.forEach((opt, index) => {
+                const isSelected = userAnswers[currentQuestionIndex] === opt.point;
+                
+                const optDiv = document.createElement('div');
+                optDiv.className = `quiz-option ${isSelected ? 'selected' : ''} p-4 sm:p-5 text-sm sm:text-base`;
+                optDiv.onclick = () => selectOption(opt.point, optDiv);
+                
+                optDiv.innerHTML = `
+                    <div class="option-letter w-7 h-7 sm:w-8 sm:h-8 text-xs sm:text-sm">${letters[index]}</div>
+                    <div class="text-gray-300 font-light pt-0.5 sm:pt-1 leading-snug">
+                        ${opt.text}
+                    </div>
+                `;
+                optionsContainer.appendChild(optDiv);
+            });
+
+            document.getElementById('btn-prev').classList.toggle('hidden', currentQuestionIndex === 0);
+            updateNextButtonState();
+        }
+
+        function selectOption(point, element) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            userAnswers[currentQuestionIndex] = point;
+            updateNextButtonState();
+            
+            setTimeout(() => {
+                nextQuestion();
+            }, 400);
+        }
+
+        function updateNextButtonState() {
+            const btnNext = document.getElementById('btn-next');
+            if (userAnswers[currentQuestionIndex]) {
+                btnNext.disabled = false;
+                btnNext.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnNext.innerText = currentQuestionIndex === questions.length - 1 ? "Ver Diagnóstico" : "Próxima Pergunta";
+            } else {
+                btnNext.disabled = true;
+                btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function nextQuestion() {
+            if (!userAnswers[currentQuestionIndex]) return;
+
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        function finishQuiz() {
+            const totalScore = userAnswers.reduce((acc, curr) => acc + curr, 0);
+            const result = resultTiers.find(tier => totalScore >= tier.min && totalScore <= tier.max);
+            
+            // Pega o texto exato da resposta
+            leadData.pergunta1 = questions[0].options.find(o => o.point === userAnswers[0])?.text || '';
+            leadData.pergunta2 = questions[1].options.find(o => o.point === userAnswers[1])?.text || '';
+            leadData.pergunta3 = questions[2].options.find(o => o.point === userAnswers[2])?.text || '';
+            leadData.pergunta4 = questions[3].options.find(o => o.point === userAnswers[3])?.text || '';
+            leadData.pergunta5 = questions[4].options.find(o => o.point === userAnswers[4])?.text || '';
+
+            leadData.score = totalScore;
+            leadData.tier = result.badgeText;
+            enviarParaPlanilha("QUIZ_FINALIZADO");
+
+            document.getElementById('result-badge').className = `inline-flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full border text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4 sm:mb-6 text-center leading-snug ${result.badgeClass}`;
+            document.getElementById('result-badge').innerText = result.badgeText;
+            
+            const firstName = leadData.name.split(' ')[0] || 'Gestor';
+            document.getElementById('result-name').innerText = firstName + ".";
+            
+            document.getElementById('result-description').innerText = result.description;
+            
+            const actionPlanContainer = document.getElementById('action-plan-list');
+            actionPlanContainer.innerHTML = '';
+            
+            result.plan.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = "flex flex-col sm:flex-row items-start gap-3 sm:gap-4 bg-[#1a1a1a] p-5 sm:p-6 rounded-xl border border-white/5";
+                li.innerHTML = `
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gold/10 text-gold flex items-center justify-center font-bold font-serif border border-gold/20">
+                        ${index + 1}
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold text-base sm:text-lg mb-1.5 sm:mb-2">${item.title}</h4>
+                        <p class="text-gray-400 font-light leading-relaxed text-sm sm:text-base">${item.text}</p>
+                    </div>
+                `;
+                actionPlanContainer.appendChild(li);
+            });
+
+            const answersListContainer = document.getElementById('answers-list');
+            answersListContainer.innerHTML = '';
+            questions.forEach((q, idx) => {
+                const userAnswerPoint = userAnswers[idx];
+                const answerObj = q.options.find(o => o.point === userAnswerPoint);
+                
+                const div = document.createElement('div');
+                div.className = "text-left";
+                div.innerHTML = `
+                    <p class="text-gray-400 text-xs sm:text-sm font-semibold mb-2">Q${idx + 1}: ${q.text}</p>
+                    <p class="text-white text-xs sm:text-sm bg-white/5 p-3 sm:p-4 rounded-lg border border-white/10 italic">R: ${answerObj.text}</p>
+                `;
+                answersListContainer.appendChild(div);
+            });
+
+            const step2 = document.getElementById('step-2');
+            const step3 = document.getElementById('step-3');
+            
+            step2.classList.remove('fade-in');
+            step2.classList.add('fade-out');
+            
+            setTimeout(() => {
+                step2.classList.add('hidden');
+                step3.classList.remove('hidden');
+                step3.classList.add('fade-in');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 300);
+        }
+
+        /* --- MODAL DE AGENDAMENTO (Final) --- */
+        function openScheduleModal() {
+            const modal = document.getElementById('schedule-modal');
+            const content = document.getElementById('schedule-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeScheduleModal() {
+            const modal = document.getElementById('schedule-modal');
+            const content = document.getElementById('schedule-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto'; 
+            }, 300);
+        }
+
+        function confirmSchedule(btn) {
+            leadData.agendou = document.getElementById('agendou_call_modal').checked;
+            
+            const originalText = btn.innerText;
+            btn.innerText = "Salvando...";
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            enviarParaPlanilha("AGENDAMENTO").then(() => {
+                alert('Ação registrada com sucesso! Nos vemos na call.');
+                closeScheduleModal();
+                btn.innerText = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            });
+        }
+    </script>
+</body>
+</html>
