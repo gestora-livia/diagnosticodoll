@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D.O.L. | Diagnóstico Operacional de Infoprodutos</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -22,7 +21,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-dark);
-            color: #d1d5db; /* gray-300 */
+            color: #d1d5db;
             overflow-x: hidden;
             margin: 0;
             padding: 0;
@@ -32,7 +31,6 @@
             font-family: 'Playfair Display', serif;
         }
 
-        /* Botão Principal */
         .btn-cta {
             background-color: var(--dark-gold);
             color: var(--white);
@@ -59,7 +57,6 @@
             border-color: var(--gold);
         }
 
-        /* Inputs de Formulário */
         .form-input {
             width: 100%;
             background-color: #1a1a1a;
@@ -85,7 +82,6 @@
             letter-spacing: 0.05em;
         }
 
-        /* Checkbox & Radio Personalizados */
         .form-radio-checkbox {
             accent-color: var(--gold);
             width: 1.25rem;
@@ -95,7 +91,6 @@
             cursor: pointer;
         }
 
-        /* Ocultar barra de rolagem (Slider e Modal) */
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -104,7 +99,6 @@
             scrollbar-width: none;
         }
 
-        /* Quiz Options */
         .quiz-option {
             background-color: #1a1a1a;
             border: 1px solid var(--border-color);
@@ -148,7 +142,6 @@
             border-color: var(--gold);
         }
 
-        /* Utility animations */
         .fade-in { animation: fadeIn 0.5s ease forwards; }
         .fade-out { animation: fadeOut 0.3s ease forwards; }
         
@@ -161,7 +154,6 @@
             to { opacity: 0; transform: translateY(-10px); }
         }
         
-        /* Bg Glow - Fixed para evitar rolagem invisível */
         .glow-bg {
             position: fixed;
             width: 600px;
@@ -172,7 +164,6 @@
             z-index: -1;
         }
 
-        /* Estilos de Impressão (PDF) */
         @media print {
             body {
                 background-color: #ffffff !important;
@@ -213,7 +204,6 @@
     <main class="flex-grow flex items-center justify-center relative z-10 py-4 px-4 sm:px-6">
         
         <section id="step-1" class="w-full max-w-4xl mx-auto flex flex-col items-center text-center gap-4 sm:gap-8 fade-in">
-            
             <div class="flex flex-col items-center w-full">
                 <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-white/5 border border-white/10 text-gold text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-3 sm:mb-6">
                     <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gold animate-pulse"></span>
@@ -262,19 +252,14 @@
 
 
         <section id="step-2" class="w-full max-w-3xl mx-auto hidden py-4">
-            
             <div class="mb-8 flex justify-between items-center text-sm font-semibold text-gray-400 uppercase tracking-widest border-b border-white/10 pb-4">
                 <span>Diagnóstico</span>
                 <span id="quiz-progress" class="text-gold">Pergunta 1 de 5</span>
             </div>
 
             <div class="bg-[var(--bg-panel)] border border-[var(--border-color)] p-6 sm:p-10 rounded-2xl shadow-2xl relative">
-                
-                <h2 id="question-text" class="text-lg sm:text-2xl text-white font-serif leading-relaxed mb-8">
-                    </h2>
-
-                <div id="options-container" class="space-y-3 sm:space-y-4">
-                    </div>
+                <h2 id="question-text" class="text-lg sm:text-2xl text-white font-serif leading-relaxed mb-8"></h2>
+                <div id="options-container" class="space-y-3 sm:space-y-4"></div>
 
                 <div class="mt-8 flex justify-between items-center">
                     <button type="button" id="btn-prev" onclick="prevQuestion()" class="text-gray-400 hover:text-white text-xs sm:text-sm font-semibold uppercase tracking-widest transition-colors hidden">
@@ -287,50 +272,41 @@
             </div>
         </section>
 
-
         <section id="step-3" class="w-full max-w-4xl mx-auto hidden py-8">
-            <div id="pdf-content" class="pb-6">
-            
-                <div class="text-center mb-12">
-                    <span id="result-badge" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-6 text-center leading-snug">
-                        </span>
-                    
-                    <h1 class="text-3xl sm:text-5xl text-white font-serif leading-[1.2] mb-6">
-                        Seu Diagnóstico, <span id="result-name" class="italic text-light-cream block sm:inline"></span>
-                    </h1>
+            <div class="text-center mb-12">
+                <span id="result-badge" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-6 text-center leading-snug"></span>
+                <h1 class="text-3xl sm:text-5xl text-white font-serif leading-[1.2] mb-6">
+                    Seu Diagnóstico, <span id="result-name" class="italic text-light-cream block sm:inline"></span>
+                </h1>
+            </div>
+
+            <div class="bg-[var(--bg-panel)] border border-[var(--border-color)] rounded-2xl shadow-2xl overflow-hidden mb-12">
+                <div class="p-6 sm:p-10 border-b border-white/5">
+                    <h3 class="text-lg sm:text-xl text-white font-serif mb-4 flex items-center gap-3">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        Realidade da Operação
+                    </h3>
+                    <p id="result-description" class="text-gray-300 leading-relaxed font-light text-base sm:text-lg"></p>
                 </div>
 
-                <div class="bg-[var(--bg-panel)] border border-[var(--border-color)] rounded-2xl shadow-2xl overflow-hidden mb-12">
-                    
-                    <div class="p-6 sm:p-10 border-b border-white/5">
-                        <h3 class="text-lg sm:text-xl text-white font-serif mb-4 flex items-center gap-3">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                            Realidade da Operação
-                        </h3>
-                        <p id="result-description" class="text-gray-300 leading-relaxed font-light text-base sm:text-lg">
-                            </p>
-                    </div>
-
-                    <div class="p-6 sm:p-10 bg-[#111111]">
-                        <h3 class="text-lg sm:text-xl text-gold font-serif mb-6 flex items-center gap-3">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                            Seu Plano de Ação (24h)
-                        </h3>
-                        
-                        <ul id="action-plan-list" class="space-y-4 sm:space-y-6">
-                            </ul>
-                    </div>
-                    
-                    <div id="answers-summary" class="p-6 sm:p-10 border-t border-white/5 bg-[#0a0a0a]">
-                        <h3 class="text-lg sm:text-xl text-white font-serif mb-6 flex items-center gap-3">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                            Resumo das Respostas
-                        </h3>
-                        <div id="answers-list" class="space-y-4 sm:space-y-5">
-                            </div>
-                    </div>
+                <div class="p-6 sm:p-10 bg-[#111111]">
+                    <h3 class="text-lg sm:text-xl text-gold font-serif mb-6 flex items-center gap-3">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Seu Plano de Ação (24h)
+                    </h3>
+                    <ul id="action-plan-list" class="space-y-4 sm:space-y-6"></ul>
                 </div>
-            </div> <div id="pitch-section" class="text-center max-w-3xl mx-auto bg-white/5 border border-white/10 p-6 sm:p-12 rounded-2xl backdrop-blur-sm">
+                
+                <div id="answers-summary" class="p-6 sm:p-10 border-t border-white/5 bg-[#0a0a0a]">
+                    <h3 class="text-lg sm:text-xl text-white font-serif mb-6 flex items-center gap-3">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Resumo das Respostas
+                    </h3>
+                    <div id="answers-list" class="space-y-4 sm:space-y-5"></div>
+                </div>
+            </div>
+
+            <div id="pitch-section" class="text-center max-w-3xl mx-auto bg-white/5 border border-white/10 p-6 sm:p-12 rounded-2xl backdrop-blur-sm">
                 <span class="text-gold font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-4 block">A dura realidade...</span>
                 
                 <p class="text-base sm:text-lg text-gray-300 mb-6 font-light leading-relaxed">
@@ -343,8 +319,8 @@
                     É aqui que a <span class="text-gold italic">Engenharia S.O.L </span> entra.
                 </p>
 
+                <!-- Slider S.O.L. de Vídeos -->
                 <div class="my-10 sm:my-12 relative w-full overflow-hidden group">
-    
                     <button type="button" onclick="scrollCarousel(-1)" class="absolute left-0 top-1/3 z-30 bg-black/60 hover:bg-[#947653] text-white p-2 sm:p-3 rounded-r-xl border border-[#947653]/30 border-l-0 backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hidden sm:block shadow-lg">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                     </button>
@@ -410,7 +386,8 @@
                         <span class="text-[8px] sm:text-[9px] text-cream/70 font-bold tracking-widest mt-1.5 sm:mt-2 uppercase">Conheça a estrutura - Sem compromisso</span>
                     </button>
                     
-                    <button id="btn-pdf" type="button" onclick="gerarPDF()" class="mt-2 text-gray-400 hover:text-white font-medium text-xs sm:text-sm flex items-center justify-center w-full sm:w-auto gap-2 transition-colors border border-gray-600/50 hover:border-white/30 px-5 py-2.5 rounded-full bg-white/5">
+                    <!-- Botão de impressão simples restaurado -->
+                    <button onclick="window.print()" class="mt-2 text-gray-400 hover:text-white font-medium text-xs sm:text-sm flex items-center justify-center w-full sm:w-auto gap-2 transition-colors border border-gray-600/50 hover:border-white/30 px-5 py-2.5 rounded-full bg-white/5">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                         Baixar em PDF
                     </button>
@@ -847,37 +824,10 @@
             });
         }
 
-        /* --- FUNÇÃO DO CARROSSEL DE VÍDEOS --- */
         function scrollCarousel(direction) {
             const carousel = document.getElementById('video-carousel');
             const scrollAmount = carousel.clientWidth * 0.8; 
             carousel.scrollBy({ left: scrollAmount * direction, behavior: 'smooth' });
-        }
-
-        /* --- FUNÇÃO GERAR PDF --- */
-        function gerarPDF() {
-            const btn = document.getElementById('btn-pdf');
-            const originalText = btn.innerHTML;
-            
-            btn.innerHTML = "⏳ Gerando seu PDF...";
-            btn.disabled = true;
-
-            const element = document.getElementById('pdf-content');
-            const nomePessoa = leadData.name.split(' ')[0] || 'Gestor';
-            const nomeArquivo = `Diagnostico_DOL_${nomePessoa}.pdf`;
-
-            const opt = {
-                margin:       [5, 5, 5, 5],
-                filename:     nomeArquivo,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0a0a0a' },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            });
         }
     </script>
 </body>
