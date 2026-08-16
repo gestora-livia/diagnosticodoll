@@ -10,7 +10,7 @@
         :root {
             --gold: #947653;
             --dark-gold: #5b3b03;
-            --light-cream: #ffe1a1;
+            --light-cream: #ffe1a1; 
             --cream-bg: #fcfaf7;
             --white: #ffffff;
             --bg-dark: #0a0a0a;
@@ -453,6 +453,7 @@
                         <label class="form-label">Faturamento médio mensal? *</label>
                         <select name="faturamento" required class="form-input appearance-none text-xs sm:text-sm cursor-pointer">
                             <option value="" disabled selected>Selecione uma opção</option>
+                        
                             <option value="R$ 50 mil a R$ 100 mil">R$ 50 mil a R$ 100 mil</option>
                             <option value="R$ 100 mil a R$ 300 mil">R$ 100 mil a R$ 500 mil</option>
                             <option value="Acima de R$ 500 mil">Acima de R$ 500 mil</option>
@@ -521,7 +522,7 @@
 
         const questions = [
             {
-                text: "1. Quando a estratégia de um infoproduto é fechada, como as tarefas chegam até a equipe?",
+                text: "1. Quando a estratégia de um projeto é fechada, como as tarefas chegam até a equipe?",
                 options: [
                     { point: 1, text: "De forma descentralizada: reuniões, áudios no WhatsApp ou mensagens diretas. A equipe executa conforme a demanda surge." },
                     { point: 2, text: "Ferramentas de gestão (ClickUp/Trello/Notion), mas exige trabalho manual: o gestor precisa criar card por card, definir prazos e atribuir responsáveis." },
@@ -530,7 +531,7 @@
                 ]
             },
             {
-                text: "2. Faltam poucos dias para o infoprodutor ir ao ar. Um Copywriter atrasa a entrega em 2 dias. Como a operação reage?",
+                text: "2. Faltam poucos dias para a campanha ir ao ar. Um Copywriter atrasa a entrega em 2 dias. Como a operação reage?",
                 options: [
                     { point: 1, text: "Reação em cadeia: é necessário avisar a equipe nos grupos, cobrar os responsáveis e acelerar a produção para compensar o tempo perdido." },
                     { point: 2, text: "Ajuste manual: o gestor de projetos precisa abrir a ferramenta de gestão e alterar as datas de todas as tarefas subsequentes, card por card." },
